@@ -1,161 +1,304 @@
 import tkinter as tk
-import tkinter.messagebox as messagebox
 import sqlite3
+from tkinter import ttk
+from tkcalendar import DateEntry
 
-window = tk.Tk()
-window.title("Takip Sistemi")
-
-
-conn = sqlite3.connect("kullanici_veritabani.db")
-cursor = conn.cursor()
-
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS kullanıcılar (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ad TEXT,
-        soyad TEXT,
-        kullanici_adi TEXT,
-        password TEXT,
-        tc_kimlik_no TEXT,
-        telefon TEXT,
-        email TEXT,
-        adres TEXT,
-        kullanici_type TEXT
-    )
-""")
-
-def show_login_screen():
-    login_frame.grid(row=1, column=1)
-    register_frame.grid_forget()
-
-def show_register_screen():
-    login_frame.grid_forget()
-    register_frame.grid(row=1, column=1)
+def create_table():
+    conn = sqlite3.connect('tracking_system.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 name TEXT,
+                 surname TEXT,
+                 username TEXT UNIQUE,
+                 password TEXT,
+                 tr_id TEXT,
+                 phone TEXT,
+                 email TEXT,
+                 address TEXT,
+                 usertype TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS events
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 processing_date TEXT,
+                 start_time TEXT,
+                 event_time TEXT,
+                 event_type TEXT,
+                 description TEXT,
+                 user_id INTEGER,
+                 FOREIGN KEY(user_id) REFERENCES users(id))''')
+    conn.commit()
+    conn.close()
 
 def register():
-    ad = entry_ad.get()
-    soyad = entry_soyad.get()
-    kullanici_adi = entry_kullanici_adi.get()
-    password = entry_password.get()
-    tc_kimlik_no = entry_tc_kimlik_no.get()
-    telefon = entry_telefon.get()
-    email = entry_email.get()
-    adres = entry_adres.get()
-    kullanici_type = kullanici_type_var.get()
+    name = name_entry.get()
+    surname = surname_entry.get()
+    username = username_entry.get()
+    password = password_entry.get()
+    tr_id = tr_id_entry.get()
+    phone = phone_entry.get()
+    email = email_entry.get()
+    address = address_entry.get()
+    usertype = usertype_var.get()
 
-    if not ad or not soyad or not kullanici_adi or not password or not tc_kimlik_no or not telefon or not email or not adres:
-        messagebox.showerror("Hata", "Lütfen istenen bilgileri eksiksiz doldurun!")
+    if not all([name, surname, username, password, tr_id, phone, email, address, usertype]):
+        warning_label.config(text="Please Fill in the Information Completely", fg="red")
         return
 
-    cursor.execute("""
-        INSERT INTO kullanıcılar (ad, soyad, kullanici_adi, password, tc_kimlik_no, telefon, email, adres, kullanici_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (ad, soyad, kullanici_adi, password, tc_kimlik_no, telefon, email, adres, kullanici_type))
+    conn = sqlite3.connect('tracking_system.db')
+    c = conn.cursor()
+    c.execute('''INSERT INTO users (name, surname, username, password, tr_id, phone, email, address, usertype)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+              (name, surname, username, password, tr_id, phone, email, address, usertype))
     conn.commit()
+    conn.close()
 
-    messagebox.showinfo("Başarılı", "Kayıt Başarılı!")
+    clear_entries()
+    warning_label.config(text="Registration successful. Please login.", fg="green")
+
+def clear_entries():
+    name_entry.delete(0, tk.END)
+    surname_entry.delete(0, tk.END)
+    username_entry.delete(0, tk.END)
+    password_entry.delete(0, tk.END)
+    tr_id_entry.delete(0, tk.END)
+    phone_entry.delete(0, tk.END)
+    email_entry.delete(0, tk.END)
+    address_entry.delete(0, tk.END)
+    usertype_var.set("")  # Clear the usertype selection
 
 def login():
-    kullanici_adi = entry_login_kullanici_adi.get()
-    password = entry_login_password.get()
+    print("Login button clicked")  # Debug statement 1
 
-    cursor.execute("""
-        SELECT * FROM kullanıcılar WHERE kullanici_adi = ? AND password = ?
-    """, (kullanici_adi, password))
-    user = cursor.fetchone()
+    username = username_entry.get()
+    password = password_entry.get()
 
-    if user is not None:
-        messagebox.showinfo("Başarılı", "Giriş Başarılı!")
-    else:
-        messagebox.showerror("Hata", "Giriş Reddedildi!")
+    print(f"Username: {username}")  # Debug statement 2
+    print(f"Password: {password}")  # Debug statement 3
 
-# Ana başlık
-label_baslik = tk.Label(window, text="Takip Sistemi", font=("Arial", 18, "bold"))
-label_baslik.grid(row=0, column=0, columnspan=3, padx=10, pady=10)
+    conn = sqlite3.connect('tracking_system.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE username=?", (username,))
+    user = c.fetchone()
 
-# Giriş Ekranı
-login_frame = tk.Frame(window)
-login_frame.grid(row=1, column=1)
+    #if user is not None and user[3] == password:
+    #    print("Login successful")  # Debug statement 4
+    show_calendar_screen()
+    #elif user is None:
+    #    print("Username not found")  # Debug statement 5
+    #    warning_label.config(text="Username not found. Please try again.", fg="red")
+    #else:
+    #    print("Incorrect password")  # Debug statement 6
+    #    warning_label.config(text="Incorrect password. Please try again.", fg="red")
 
-label_login_kullanici_adi = tk.Label(login_frame, text="Kullanıcı Adı:")
-label_login_kullanici_adi.grid(row=0, column=0)
-entry_login_kullanici_adi = tk.Entry(login_frame)
-entry_login_kullanici_adi.grid(row=0, column=1)
+    conn.close()
 
-label_login_password = tk.Label(login_frame, text="Password:")
-label_login_password.grid(row=1, column=0)
-entry_login_password = tk.Entry(login_frame, show="*")
-entry_login_password.grid(row=1, column=1)
 
-button_login = tk.Button(login_frame, text="Giriş", command=login)
-button_login.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
-# Kayıt Ol Ekranı
-register_frame = tk.Frame(window)
 
-label_ad = tk.Label(register_frame, text="Ad:")
-label_ad.grid(row=0, column=0)
-entry_ad = tk.Entry(register_frame)
-entry_ad.grid(row=0, column=1)
 
-label_soyad = tk.Label(register_frame, text="Soyad:")
-label_soyad.grid(row=1, column=0)
-entry_soyad = tk.Entry(register_frame)
-entry_soyad.grid(row=1, column=1)
 
-label_kullanici_adi = tk.Label(register_frame, text="Kullanıcı Adı:")
-label_kullanici_adi.grid(row=2, column=0)
-entry_kullanici_adi = tk.Entry(register_frame)
-entry_kullanici_adi.grid(row=2, column=1)
 
-label_password = tk.Label(register_frame, text="Password:")
-label_password.grid(row=3, column=0)
-entry_password = tk.Entry(register_frame, show="*")
-entry_password.grid(row=3, column=1)
+def show_register_screen():
+    login_screen.pack_forget()
+    register_screen.pack()
+    window.title("Register")
 
-label_tc_kimlik_no = tk.Label(register_frame, text="TC Kimlik No:")
-label_tc_kimlik_no.grid(row=4, column=0)
-entry_tc_kimlik_no = tk.Entry(register_frame)
-entry_tc_kimlik_no.grid(row=4, column=1)
+def show_login_screen():
+    register_screen.pack_forget()
+    login_screen.pack()
+    window.title("Tracking System")
 
-label_telefon = tk.Label(register_frame, text="Telefon:")
-label_telefon.grid(row=5, column=0)
-entry_telefon = tk.Entry(register_frame)
-entry_telefon.grid(row=5, column=1)
+def show_calendar_screen():
+    login_screen.pack_forget()
+    calendar_screen.pack()
+    window.title("View Calendar")
 
-label_email = tk.Label(register_frame, text="Email:")
-label_email.grid(row=6, column=0)
-entry_email = tk.Entry(register_frame)
-entry_email.grid(row=6, column=1)
+def save_event():
+    processing_date = processing_date_entry.get()
+    start_time = start_time_entry.get()
+    event_time = event_time_entry.get()
+    event_type = event_type_entry.get()
+    description = description_entry.get("1.0", tk.END)
 
-label_adres = tk.Label(register_frame, text="Adres:")
-label_adres.grid(row=7, column=0)
-entry_adres = tk.Entry(register_frame)
-entry_adres.grid(row=7, column=1)
+    if not all([processing_date, start_time, event_time, event_type, description]):
+        event_warning_label.config(text="Please Fill in the Information Completely", fg="red")
+        return
 
-label_kullanici_type = tk.Label(register_frame, text="Kullanıcı Type:")
-label_kullanici_type.grid(row=8, column=0)
+    conn = sqlite3.connect('tracking_system.db')
+    c = conn.cursor()
+    c.execute('''INSERT INTO events (processing_date, start_time, event_time, event_type, description, user_id)
+                 VALUES (?, ?, ?, ?, ?, ?)''',
+              (processing_date, start_time, event_time, event_type, description, 1))  # Assuming user_id is 1 for now
+    conn.commit()
+    conn.close()
 
-kullanici_type_options = ["Admin", "Kullanıcı"]
-kullanici_type_var = tk.StringVar(register_frame)
-kullanici_type_var.set(kullanici_type_options[0])
+    clear_event_entries()
+    event_warning_label.config(text="Event saved successfully.", fg="green")
+    update_event_table()
 
-kullanici_type_menu = tk.OptionMenu(register_frame, kullanici_type_var, *kullanici_type_options)
-kullanici_type_menu.grid(row=8, column=1)
+def clear_event_entries():
+    processing_date_entry.delete(0, tk.END)
+    start_time_entry.delete(0, tk.END)
+    event_time_entry.delete(0, tk.END)
+    event_type_entry.delete(0, tk.END)
+    description_entry.delete("1.0", tk.END)
 
-button_register = tk.Button(register_frame, text="Kayıt Ol", command=register)
-button_register.grid(row=9, column=0, columnspan=2)
+def update_event_table():
+    conn = sqlite3.connect('tracking_system.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM events")
+    events = c.fetchall()
+    conn.close()
 
-# İlk olarak giriş ekranını göster
-show_login_screen()
+    for row in event_table.get_children():
+        event_table.delete(row)
 
-# Butonlar
-button_login_screen = tk.Button(window, text="Giriş Yap", command=show_login_screen)
-button_login_screen.grid(row=1, column=0, padx=10, pady=10)
+    for event in events:
+        event_table.insert("", tk.END, values=event)
 
-button_register_screen = tk.Button(window, text="Kayıt Ol", command=show_register_screen)
-button_register_screen.grid(row=1, column=2, padx=10, pady=10)
+# Create the main window
+window = tk.Tk()
+window.title("Tracking System")
+window.geometry("600x500")
 
-window.protocol("WM_DELETE_WINDOW", lambda: conn.close())
+# Create the login screen
+login_screen = tk.Frame(window)
+login_screen.pack()
+
+title_label = tk.Label(login_screen, text="Tracking System", font=("Helvetica", 16))
+title_label.pack()
+
+username_label = tk.Label(login_screen, text="Username:")
+username_label.pack()
+username_entry = tk.Entry(login_screen)
+username_entry.pack()
+
+password_label = tk.Label(login_screen, text="Password:")
+password_label.pack()
+password_entry = tk.Entry(login_screen, show="*")
+password_entry.pack()
+
+login_button = tk.Button(login_screen, text="Login", command=login)
+login_button.pack()
+
+register_button = tk.Button(login_screen, text="Register", command=show_register_screen)
+register_button.pack()
+
+# Create the register screen
+register_screen = tk.Frame(window)
+
+title_label = tk.Label(register_screen, text="Register", font=("Helvetica", 16))
+title_label.pack()
+
+name_label = tk.Label(register_screen, text="Name:")
+name_label.pack()
+name_entry = tk.Entry(register_screen)
+name_entry.pack()
+
+surname_label = tk.Label(register_screen, text="Surname:")
+surname_label.pack()
+surname_entry = tk.Entry(register_screen)
+surname_entry.pack()
+
+username_label = tk.Label(register_screen, text="Username:")
+username_label.pack()
+username_entry = tk.Entry(register_screen)
+username_entry.pack()
+
+password_label = tk.Label(register_screen, text="Password:")
+password_label.pack()
+password_entry = tk.Entry(register_screen, show="*")
+password_entry.pack()
+
+tr_id_label = tk.Label(register_screen, text="TR ID No:")
+tr_id_label.pack()
+tr_id_entry = tk.Entry(register_screen)
+tr_id_entry.pack()
+
+phone_label = tk.Label(register_screen, text="Phone:")
+phone_label.pack()
+phone_entry = tk.Entry(register_screen)
+phone_entry.pack()
+
+email_label = tk.Label(register_screen, text="Email:")
+email_label.pack()
+email_entry = tk.Entry(register_screen)
+email_entry.pack()
+
+address_label = tk.Label(register_screen, text="Address:")
+address_label.pack()
+address_entry = tk.Entry(register_screen)
+address_entry.pack()
+
+usertype_label = tk.Label(register_screen, text="User Type:")
+usertype_label.pack()
+usertype_var = tk.StringVar(register_screen)  # Variable to store the usertype selection
+usertype_dropdown = tk.OptionMenu(register_screen, usertype_var, "Admin", "User")
+usertype_dropdown.pack()
+
+register_button = tk.Button(register_screen, text="Register", command=register)
+register_button.pack()
+
+warning_label = tk.Label(register_screen)
+warning_label.pack()
+
+login_button = tk.Button(register_screen, text="Back to Login", command=show_login_screen)
+login_button.pack()
+
+# Create the calendar screen
+calendar_screen = tk.Frame(window)
+
+title_label = tk.Label(calendar_screen, text="View Calendar", font=("Helvetica", 16))
+title_label.pack()
+
+# Input fields for event information
+processing_date_label = tk.Label(calendar_screen, text="Processing Date:")
+processing_date_label.pack()
+processing_date_entry = DateEntry(calendar_screen)
+processing_date_entry.pack()
+
+start_time_label = tk.Label(calendar_screen, text="Event Start Time:")
+start_time_label.pack()
+start_time_entry = tk.Entry(calendar_screen)
+start_time_entry.pack()
+
+event_time_label = tk.Label(calendar_screen, text="Event Time:")
+event_time_label.pack()
+event_time_entry = tk.Entry(calendar_screen)
+event_time_entry.pack()
+
+event_type_label = tk.Label(calendar_screen, text="Type of Event:")
+event_type_label.pack()
+event_type_entry = tk.Entry(calendar_screen)
+event_type_entry.pack()
+
+description_label = tk.Label(calendar_screen, text="Explanation of the Incident:")
+description_label.pack()
+description_entry = tk.Text(calendar_screen, height=5, width=30)
+description_entry.pack()
+
+save_button = tk.Button(calendar_screen, text="Save Event", command=save_event)
+save_button.pack()
+
+event_warning_label = tk.Label(calendar_screen)
+event_warning_label.pack()
+
+# Event table
+event_table = ttk.Treeview(calendar_screen, columns=("Processing Date", "Start Time", "Event Time", "Event Type", "Description"), show="headings")
+event_table.heading("Processing Date", text="Processing Date")
+event_table.heading("Start Time", text="Start Time")
+event_table.heading("Event Time", text="Event Time")
+event_table.heading("Event Type", text="Event Type")
+event_table.heading("Description", text="Description")
+event_table.pack()
+
+# Scrollbar for the event table
+scrollbar = tk.Scrollbar(calendar_screen, orient="vertical", command=event_table.yview)
+scrollbar.pack(side="right", fill="y")
+event_table.configure(yscrollcommand=scrollbar.set)
+
+create_table()  # Create the tables if they don't exist
+
+show_login_screen()  # Initially show the login screen
 
 window.mainloop()
