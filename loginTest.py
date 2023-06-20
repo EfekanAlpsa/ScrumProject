@@ -8,6 +8,7 @@ from ttkthemes import ThemedTk
 from ttkthemes import ThemedStyle
 import winsound
 
+
 def create_table():
     conn = sqlite3.connect('tracking_system.db')
     c = conn.cursor()
@@ -33,6 +34,7 @@ def create_table():
                  FOREIGN KEY(user_id) REFERENCES users(id))''')
     conn.commit()
     conn.close()
+
 
 def register():
     name = name_entry.get()
@@ -60,6 +62,7 @@ def register():
     clear_entries()
     warning_label.config(text="Registration successful. Please login.", fg="green")
 
+
 def clear_entries():
     name_entry.delete(0, tk.END)
     surname_entry.delete(0, tk.END)
@@ -70,6 +73,7 @@ def clear_entries():
     email_entry.delete(0, tk.END)
     address_entry.delete(0, tk.END)
     usertype_var.set("")  # Clear the usertype selection
+
 
 def login():
     print("Login button clicked")  # Debug statement 1
@@ -85,32 +89,36 @@ def login():
     c.execute("SELECT * FROM users WHERE username=?", (username,))
     user = c.fetchone()
 
-    #if user is not None and user[3] == password:
+    # if user is not None and user[3] == password:
     #    print("Login successful")  # Debug statement 4
     show_calendar_screen()
-    #elif user is None:
+    # elif user is None:
     #    print("Username not found")  # Debug statement 5
     #    warning_label.config(text="Username not found. Please try again.", fg="red")
-    #else:
+    # else:
     #    print("Incorrect password")  # Debug statement 6
     #    warning_label.config(text="Incorrect password. Please try again.", fg="red")
 
     conn.close()
+
 
 def show_register_screen():
     login_screen.pack_forget()
     register_screen.pack()
     window.title("Register")
 
+
 def show_login_screen():
     register_screen.pack_forget()
     login_screen.pack()
     window.title("Tracking System")
 
+
 def show_calendar_screen():
     login_screen.pack_forget()
     calendar_screen.pack()
     window.title("View Calendar")
+
 
 def pick_time(entry):
     def set_time():
@@ -153,6 +161,7 @@ def pick_time(entry):
     confirm_button = ttk.Button(time_picker, text="Confirm", command=set_time)
     confirm_button.pack()
 
+
 def save_event():
     processing_date = processing_date_entry.get()
     start_time = start_time_entry.get()
@@ -179,6 +188,7 @@ def save_event():
     response = messagebox.askyesno("Reminder", "Do you want a reminder?")
     if response == True:
         date_time_selection()
+
 
 def date_time_selection():
     window = tk.Toplevel()
@@ -221,10 +231,10 @@ def date_time_selection():
     save_button = tk.Button(window, text="Save", command=alarm)
     save_button.grid(row=2, columnspan=2, padx=10, pady=10)
 
+
 def trigger_alarm():
     winsound.PlaySound("SystemExit", winsound.SND_ALIAS)
     messagebox.showinfo("Reminder", "Alarm is ringing!")
-
 
 
 def clear_event_entries():
@@ -233,6 +243,7 @@ def clear_event_entries():
     event_time_entry.delete(0, tk.END)
     event_type_entry.delete(0, tk.END)
     description_entry.delete("1.0", tk.END)
+
 
 def update_event_table():
     conn = sqlite3.connect('tracking_system.db')
@@ -246,6 +257,7 @@ def update_event_table():
 
     for event in events:
         event_table.insert("", tk.END, values=event)
+
 
 def update_event():
     # Get the selected item from the event table
@@ -270,7 +282,6 @@ def update_event():
     if not event:
         messagebox.showwarning("Error", "Event not found.")
         return
-
 
     confirmation = messagebox.askyesno("Confirmation", "Are you sure you want to delete this event?")
 
@@ -397,7 +408,8 @@ start_time_label.pack()
 start_time_entry = ttk.Entry(calendar_screen)
 start_time_entry.pack()
 
-pick_start_time_button = ttk.Button(calendar_screen, text="Pick Start Time", command=lambda: pick_time(start_time_entry))
+pick_start_time_button = ttk.Button(calendar_screen, text="Pick Start Time",
+                                    command=lambda: pick_time(start_time_entry))
 pick_start_time_button.pack()
 
 event_time_label = ttk.Label(calendar_screen, text="Event Time:")
@@ -405,7 +417,8 @@ event_time_label.pack()
 event_time_entry = ttk.Entry(calendar_screen)
 event_time_entry.pack()
 
-pick_event_time_button = ttk.Button(calendar_screen, text="Pick Event Time", command=lambda: pick_time(event_time_entry))
+pick_event_time_button = ttk.Button(calendar_screen, text="Pick Event Time",
+                                    command=lambda: pick_time(event_time_entry))
 pick_event_time_button.pack()
 
 event_type_label = tk.Label(calendar_screen, text="Type of Event:")
