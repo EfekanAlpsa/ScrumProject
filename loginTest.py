@@ -97,12 +97,6 @@ def login():
 
     conn.close()
 
-
-
-
-
-
-
 def show_register_screen():
     login_screen.pack_forget()
     register_screen.pack()
@@ -202,6 +196,52 @@ def update_event_table():
 
     for event in events:
         event_table.insert("", tk.END, values=event)
+
+def update_event():
+    # Get the selected item from the event table
+    selected_item = event_table.focus()
+
+    if not selected_item:
+        messagebox.showwarning("Error", "No event selected.")
+        return
+
+    # Get the values of the selected event
+    event_values = event_table.item(selected_item, "values")
+
+    event_id = event_values[0]
+
+    # Retrieve the event details from the database
+    conn = sqlite3.connect('tracking_system.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM events WHERE id=?", (event_id,))
+    event = c.fetchone()
+    conn.close()
+
+    if not event:
+        messagebox.showwarning("Error", "Event not found.")
+        return
+
+    # Create a new window for updating the event
+    update_window = tk.Toplevel(window)
+    update_window.title("Update Event")
+
+    confirmation = messagebox.askyesno("Confirmation", "Are you sure you want to delete this event?")
+
+    if confirmation:
+        # Delete the event from the database
+        conn = sqlite3.connect('tracking_system.db')
+        c = conn.cursor()
+        c.execute("DELETE FROM events WHERE id=?", (event_id,))
+        conn.commit()
+        conn.close()
+
+        messagebox.showinfo("Success", "Event deleted successfully.")
+
+        # Reload the event table
+        update_event_table()
+
+        # Close the update window
+        update_window.destroy()
 
 # Create the main window
 window = tk.Tk()
@@ -335,6 +375,8 @@ description_entry.pack()
 
 save_button = tk.Button(calendar_screen, text="Save Event", command=save_event)
 save_button.pack()
+delete_button = tk.Button(calendar_screen, text="Delete", command=update_event)
+delete_button.pack()
 
 event_warning_label = tk.Label(calendar_screen)
 event_warning_label.pack()
