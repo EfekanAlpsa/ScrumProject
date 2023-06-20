@@ -212,20 +212,20 @@ window.geometry("1480x720")
 
 # Create the login screen
 login_screen = tk.Frame(window)
-login_screen.pack()
+login_screen.pack(expand=True)
 
-title_label = tk.Label(login_screen, text="Tracking System", font=("Helvetica", 16))
+title_label = tk.Label(login_screen, text="Tracking System", font=("Helvetica", 32))
 title_label.pack()
 
-username_label = tk.Label(login_screen, text="Username:")
-username_label.pack()
-username_entry = tk.Entry(login_screen)
-username_entry.pack()
+username_label = tk.Label(login_screen, text="Username:", anchor="center")
+username_label.pack(pady=10)
+username_entry = tk.Entry(login_screen, width=30, justify="center")
+username_entry.pack(pady=10)
 
-password_label = tk.Label(login_screen, text="Password:")
-password_label.pack()
-password_entry = tk.Entry(login_screen, show="*")
-password_entry.pack()
+password_label = tk.Label(login_screen, text="Password:", anchor="center")
+password_label.pack(pady=10)
+password_entry = tk.Entry(login_screen, show="*", width=30, justify="center")
+password_entry.pack(pady=10)
 
 login_button = tk.Button(login_screen, text="Login", command=login)
 login_button.pack()
