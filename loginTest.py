@@ -401,3 +401,4 @@ create_table()  # Create the tables if they don't exist
 show_login_screen()  # Initially show the login screen
 
 window.mainloop()
+
