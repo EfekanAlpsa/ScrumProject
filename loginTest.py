@@ -3,6 +3,8 @@ import sqlite3
 from tkinter import ttk
 from tkcalendar import DateEntry
 from tkinter import messagebox
+from datetime import datetime, time
+
 
 def create_table():
     conn = sqlite3.connect('tracking_system.db')
@@ -114,6 +116,47 @@ def show_calendar_screen():
     calendar_screen.pack()
     window.title("View Calendar")
 
+def pick_time(entry):
+    def set_time():
+        selected_time = time(
+            int(hour_spinbox.get()),
+            int(minute_spinbox.get()),
+            int(second_spinbox.get())
+        )
+        entry.delete(0, tk.END)
+        entry.insert(tk.END, selected_time.strftime("%H:%M:%S"))
+        time_picker.destroy()
+
+    time_picker = tk.Toplevel(window)
+    time_picker.title("Pick Time")
+    time_picker.geometry("200x150")
+
+    current_time = datetime.now().time()
+
+    hour_label = ttk.Label(time_picker, text="Hour:")
+    hour_label.pack()
+    hour_spinbox = ttk.Spinbox(time_picker, from_=0, to=23, wrap=True)
+    hour_spinbox.delete(0, tk.END)
+    hour_spinbox.insert(tk.END, current_time.hour)
+    hour_spinbox.pack()
+
+    minute_label = ttk.Label(time_picker, text="Minute:")
+    minute_label.pack()
+    minute_spinbox = ttk.Spinbox(time_picker, from_=0, to=59, wrap=True)
+    minute_spinbox.delete(0, tk.END)
+    minute_spinbox.insert(tk.END, current_time.minute)
+    minute_spinbox.pack()
+
+    second_label = ttk.Label(time_picker, text="Second:")
+    second_label.pack()
+    second_spinbox = ttk.Spinbox(time_picker, from_=0, to=59, wrap=True)
+    second_spinbox.delete(0, tk.END)
+    second_spinbox.insert(tk.END, current_time.second)
+    second_spinbox.pack()
+
+    confirm_button = ttk.Button(time_picker, text="Confirm", command=set_time)
+    confirm_button.pack()
+
 def save_event():
     processing_date = processing_date_entry.get()
     start_time = start_time_entry.get()
@@ -136,6 +179,7 @@ def save_event():
     clear_event_entries()
     event_warning_label.config(text="Event saved successfully.", fg="green")
     update_event_table()
+
 
 def clear_event_entries():
     processing_date_entry.delete(0, tk.END)
@@ -253,20 +297,27 @@ title_label = tk.Label(calendar_screen, text="View Calendar", font=("Helvetica",
 title_label.pack()
 
 # Input fields for event information
+
 processing_date_label = tk.Label(calendar_screen, text="Processing Date:")
 processing_date_label.pack()
 processing_date_entry = DateEntry(calendar_screen)
 processing_date_entry.pack()
 
-start_time_label = tk.Label(calendar_screen, text="Event Start Time:")
+start_time_label = ttk.Label(calendar_screen, text="Event Start Time:")
 start_time_label.pack()
-start_time_entry = tk.Entry(calendar_screen)
+start_time_entry = ttk.Entry(calendar_screen)
 start_time_entry.pack()
 
-event_time_label = tk.Label(calendar_screen, text="Event Time:")
+pick_start_time_button = ttk.Button(calendar_screen, text="Pick Start Time", command=lambda: pick_time(start_time_entry))
+pick_start_time_button.pack()
+
+event_time_label = ttk.Label(calendar_screen, text="Event Time:")
 event_time_label.pack()
-event_time_entry = tk.Entry(calendar_screen)
+event_time_entry = ttk.Entry(calendar_screen)
 event_time_entry.pack()
+
+pick_event_time_button = ttk.Button(calendar_screen, text="Pick Event Time", command=lambda: pick_time(event_time_entry))
+pick_event_time_button.pack()
 
 event_type_label = tk.Label(calendar_screen, text="Type of Event:")
 event_type_label.pack()
