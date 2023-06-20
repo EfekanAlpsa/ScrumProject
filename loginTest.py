@@ -6,7 +6,7 @@ from tkinter import messagebox
 from datetime import datetime, time
 from ttkthemes import ThemedTk
 from ttkthemes import ThemedStyle
-
+import winsound
 
 def create_table():
     conn = sqlite3.connect('tracking_system.db')
@@ -176,6 +176,56 @@ def save_event():
     event_warning_label.config(text="Event saved successfully.", fg="green")
     update_event_table()
 
+    response = messagebox.askyesno("Reminder", "Do you want a reminder?")
+    if response == True:
+        date_time_selection()
+
+def date_time_selection():
+    window = tk.Toplevel()
+
+    def alarm():
+        selected_date = date_picker.get_date()
+        selected_time = time_entry.get()
+
+        if selected_date is None:
+            messagebox.showwarning("Warning", "Select a valid date.")
+        else:
+            hour, minute = selected_time.split(":")
+            selected_datetime = datetime.combine(selected_date, time(int(hour), int(minute)))
+            now = datetime.now()
+
+            if selected_datetime <= now:
+                messagebox.showwarning("Warning", "You selected a past date and time.")
+            else:
+                waiting_time = (selected_datetime - now).total_seconds()
+                window.withdraw()
+                window.destroy()
+                window.after(int(waiting_time * 1000), trigger_alarm)
+
+    tk.Label(window, text="Select a date:").grid(row=0, column=0, padx=10, pady=10)
+    date_picker = DateEntry(
+        window,
+        width=12,
+        background="darkblue",
+        foreground="white",
+        date_pattern="yyyy-mm-dd",
+    )
+    date_picker.grid(row=0, column=1, padx=10, pady=10)
+
+    tk.Label(window, text="Select a time:").grid(row=1, column=0, padx=10, pady=10)
+    selected_time = datetime.now().strftime("%H:%M")
+    time_entry = tk.StringVar(value=selected_time)
+    time_entry_widget = tk.Entry(window, textvariable=time_entry)
+    time_entry_widget.grid(row=1, column=1, padx=10, pady=10)
+
+    save_button = tk.Button(window, text="Save", command=alarm)
+    save_button.grid(row=2, columnspan=2, padx=10, pady=10)
+
+def trigger_alarm():
+    winsound.PlaySound("SystemExit", winsound.SND_ALIAS)
+    messagebox.showinfo("Reminder", "Alarm is ringing!")
+
+
 
 def clear_event_entries():
     processing_date_entry.delete(0, tk.END)
@@ -221,9 +271,6 @@ def update_event():
         messagebox.showwarning("Error", "Event not found.")
         return
 
-    # Create a new window for updating the event
-    update_window = tk.Toplevel(window)
-    update_window.title("Update Event")
 
     confirmation = messagebox.askyesno("Confirmation", "Are you sure you want to delete this event?")
 
@@ -240,8 +287,6 @@ def update_event():
         # Reload the event table
         update_event_table()
 
-        # Close the update window
-        update_window.destroy()
 
 # Create the main window
 window = tk.Tk()
@@ -401,4 +446,3 @@ create_table()  # Create the tables if they don't exist
 show_login_screen()  # Initially show the login screen
 
 window.mainloop()
-
