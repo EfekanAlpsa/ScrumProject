@@ -4,6 +4,8 @@ from tkinter import ttk
 from tkcalendar import DateEntry
 from tkinter import messagebox
 from datetime import datetime, time
+from ttkthemes import ThemedTk
+from ttkthemes import ThemedStyle
 
 
 def create_table():
@@ -203,6 +205,8 @@ def update_event_table():
 
 # Create the main window
 window = tk.Tk()
+style = ThemedStyle(window)
+style.set_theme("arc")
 window.title("Tracking System")
 window.geometry("600x500")
 
