@@ -131,7 +131,7 @@ def pick_time(entry):
 
     time_picker = tk.Toplevel(window)
     time_picker.title("Pick Time")
-    time_picker.geometry("200x150")
+    time_picker.geometry("300x170")
 
     current_time = datetime.now().time()
 
@@ -208,7 +208,7 @@ window = tk.Tk()
 style = ThemedStyle(window)
 style.set_theme("arc")
 window.title("Tracking System")
-window.geometry("600x500")
+window.geometry("1480x720")
 
 # Create the login screen
 login_screen = tk.Frame(window)
