@@ -2,6 +2,7 @@ import tkinter as tk
 import sqlite3
 from tkinter import ttk
 from tkcalendar import DateEntry
+from tkinter import messagebox
 
 def create_table():
     conn = sqlite3.connect('tracking_system.db')
@@ -284,7 +285,8 @@ event_warning_label = tk.Label(calendar_screen)
 event_warning_label.pack()
 
 # Event table
-event_table = ttk.Treeview(calendar_screen, columns=("Processing Date", "Start Time", "Event Time", "Event Type", "Description"), show="headings")
+event_table = tk.ttk.Treeview(calendar_screen, columns=("id", "Processing Date", "Start Time", "Event Time", "Event Type", "Description"), show="headings")
+event_table.heading("id", text="ID")
 event_table.heading("Processing Date", text="Processing Date")
 event_table.heading("Start Time", text="Start Time")
 event_table.heading("Event Time", text="Event Time")
